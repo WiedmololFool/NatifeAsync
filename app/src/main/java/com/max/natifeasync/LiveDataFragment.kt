@@ -18,7 +18,20 @@ class LiveDataFragment : Fragment() {
     private val adapter by lazy {
         NumberListAdapter()
     }
-    private var thread = Thread()
+    private val liveData = MutableLiveData<Int>()
+
+    private val thread: Thread by lazy {
+        Thread {
+            while (!thread.isInterrupted) {
+                try {
+                    Thread.sleep(1000)
+                    liveData.postValue(Random.nextInt(0, 100))
+                } catch (e: InterruptedException) {
+                    Log.e(Constants.TAG, e.message.toString())
+                }
+            }
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -31,8 +44,7 @@ class LiveDataFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val liveData = MutableLiveData<Int>()
-        startThread(liveData)
+        startThread()
         binding?.apply {
             rcView.adapter = adapter
             rcView.layoutManager = LinearLayoutManager(requireContext())
@@ -55,25 +67,13 @@ class LiveDataFragment : Fragment() {
         stopThread()
     }
 
-    private fun startThread(liveData: MutableLiveData<Int>) {
-        val runnable = Runnable {
-            while (!thread.isInterrupted) {
-                try {
-                    Thread.sleep(1000)
-                    liveData.postValue(Random.nextInt(0, 100))
-                } catch (e: InterruptedException) {
-                    Log.e(Constants.TAG, e.message.toString())
-                }
-            }
-        }
-        thread = Thread(runnable)
+    private fun startThread() {
         thread.start()
     }
 
     private fun stopThread() {
         thread.interrupt()
     }
-
 
     companion object {
 
