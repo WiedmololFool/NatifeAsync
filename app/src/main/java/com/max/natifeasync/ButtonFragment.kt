@@ -18,7 +18,12 @@ class ButtonFragment : Fragment() {
     ): View {
         val binding = FragmentButtonBinding.inflate(inflater, container, false)
         this.binding = binding
-        binding.apply {
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        binding?.apply {
             btnLiveData.setOnClickListener {
                 changeFragment(LiveDataFragment.newInstance())
             }
@@ -29,11 +34,10 @@ class ButtonFragment : Fragment() {
                 changeFragment(CoroutineFragment.newInstance())
             }
         }
-        return binding.root
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+    override fun onDestroyView() {
+        super.onDestroyView()
         binding = null
     }
 

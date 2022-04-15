@@ -12,6 +12,7 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
+import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
 
@@ -22,9 +23,6 @@ class RxJavaFragment : Fragment() {
     private val adapter by lazy {
         NumberListAdapter()
     }
-
-    @Volatile
-    var threadIsWorking= true
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -47,35 +45,31 @@ class RxJavaFragment : Fragment() {
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ number ->
-                numberList.add(number)
+                numberList.add(number.toInt())
                 adapter.submitList(numberList.toList())
                 Log.e(Constants.TAG, numberList.toString())
-            },{
-                Log.e(Constants.TAG,it.message.toString())
-            },{
-                Log.e(Constants.TAG,"Complete")
-            }))
+            }, {
+                Log.e(Constants.TAG, it.message.toString())
+            }, {
+                Log.e(Constants.TAG, "Complete")
+            })
+        )
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         binding = null
-        stopThread()
     }
 
-    private fun dataSource(): Observable<Int> {
-        threadIsWorking = true
-        return Observable.create { subscriber ->
-            while (threadIsWorking) {
-                Thread.sleep(1000)
-                subscriber.onNext(Random.nextInt(0, 100))
-            }
-            subscriber.onComplete()
+    override fun onDestroy() {
+        super.onDestroy()
+        disposables.dispose()
+    }
+
+    private fun dataSource(): Observable<Long> {
+        return Observable.interval(1000, TimeUnit.MILLISECONDS).map {
+           Random.nextLong(0, 100)
         }
-    }
-
-    private fun stopThread(){
-        threadIsWorking = false
     }
 
     companion object {

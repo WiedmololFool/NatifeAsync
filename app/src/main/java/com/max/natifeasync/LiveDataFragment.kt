@@ -15,14 +15,11 @@ import kotlin.random.Random
 
 class LiveDataFragment : Fragment() {
 
-    private val handler = Handler()
     private var binding: FragmentLiveDataBinding? = null
     private val adapter by lazy {
         NumberListAdapter()
     }
-
-    @Volatile
-    var threadIsStopped = false
+    private var thread = Thread()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -52,26 +49,30 @@ class LiveDataFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         binding = null
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
         stopThread()
     }
 
     private fun startThread(liveData: MutableLiveData<Int>) {
-        threadIsStopped = false
-
         val runnable = Runnable {
-            if (threadIsStopped) return@Runnable
-            while (true) {
-                Thread.sleep(1000)
-                handler.post {
-                    liveData.value = Random.nextInt(0, 100)
+            while (!thread.isInterrupted) {
+                try {
+                    Thread.sleep(1000)
+                    liveData.postValue(Random.nextInt(0, 100))
+                } catch (e: InterruptedException) {
+                    Log.e(Constants.TAG, e.message.toString())
                 }
             }
         }
-        Thread(runnable).start()
+        thread = Thread(runnable)
+        thread.start()
     }
 
     private fun stopThread() {
-        threadIsStopped = true
+        thread.interrupt()
     }
 
 

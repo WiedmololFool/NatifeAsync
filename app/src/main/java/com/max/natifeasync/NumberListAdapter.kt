@@ -10,15 +10,6 @@ import com.max.natifeasync.databinding.ListNumberItemBinding
 
 class NumberListAdapter : ListAdapter<Int, NumberListAdapter.NumberViewHolder>(NumberComparator()) {
 
-    inner class NumberViewHolder(
-        private val binding: ListNumberItemBinding
-    ) : RecyclerView.ViewHolder(binding.root) {
-
-        fun bindItem(numberItem: Int) = with(binding) {
-            tvNumber.text = numberItem.toString()
-        }
-    }
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NumberViewHolder {
         val inflater = LayoutInflater.from(parent.context)
         return NumberViewHolder(ListNumberItemBinding.inflate(inflater, parent, false))
@@ -31,6 +22,15 @@ class NumberListAdapter : ListAdapter<Int, NumberListAdapter.NumberViewHolder>(N
         }
     }
 
+    class NumberViewHolder(
+        private val binding: ListNumberItemBinding
+    ) : RecyclerView.ViewHolder(binding.root) {
+
+        fun bindItem(numberItem: Int) = with(binding) {
+            tvNumber.text = numberItem.toString()
+        }
+    }
+
     class NumberComparator : DiffUtil.ItemCallback<Int>() {
         override fun areItemsTheSame(oldItem: Int, newItem: Int): Boolean {
             return oldItem == newItem
@@ -40,5 +40,6 @@ class NumberListAdapter : ListAdapter<Int, NumberListAdapter.NumberViewHolder>(N
             return oldItem == newItem
         }
     }
+
 
 }
